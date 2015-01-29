@@ -10,15 +10,11 @@
  Implementation:
      [Notes on implementation]
 */
-//
-// Original Author:  Alexander Morton
-//         Created:  Tue, 16 Dec 2014 00:09:47 GMT
-//
-//
 
 
 // system include files
 #include <memory>
+#include <math.h> 
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -90,6 +86,7 @@ private:
 	int lTotalNumJets;
 	int lTotalNumTriggeredJets;
 	int lTotalNumPassedJets;
+	int lTotalNumPassedBjets;
 
 	double lPassedJetsCsv[16];
 	double lPassedBjetsCsv[16];
@@ -98,8 +95,10 @@ private:
 
 	edm::Service<TFileService> fs;
 
-	TGraph * lJetPassEfficiencyGraph;
-	TGraph * lBjetPassEfficiencyGraph;
+	TH2F * h_BjetTurnOnCurve;
+
+	TGraph * graph_JetPassEfficiencyGraph;
+	TGraph * graph_BjetPassEfficiencyGraph;
 
 	// declare a map of b-tag discriminator histograms
 	std::map<std::string, TH2F *> bDiscriminatorsMap;
@@ -125,6 +124,7 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 	lTotalNumJets = 0;
 	lTotalNumTriggeredJets = 0;
 	lTotalNumPassedJets = 0;
+	lTotalNumPassedBjets = 0;
 
 	double lCsvValueArraryFiller = 0.20;
 
@@ -161,36 +161,50 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 
 BTaggingEfficiency::~BTaggingEfficiency()
 {
+
+
+	h_BjetTurnOnCurve = fs->make<TH2F>("h_AltBjetTurnOnCurve", "Turn-on Curve (b jets)", 80, 0.0, 20.0, 100, 0.0, 1.0);
+
  
 //	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
 //	std::cout << "lTotalNumTriggeredJets: " << lTotalNumTriggeredJets << std::endl;
 //	std::cout << "lTotalNumPassedJets: " << lTotalNumPassedJets << std::endl;
+//	std::cout << "lTotalNumPassedBjets: " << lTotalNumPassedBjets << std::endl;
 //	std::cout << "lPassedJetsCsv[0]: " << lPassedJetsCsv[0] << std::endl;
 //	std::cout << "lPassedBjetsCsv[0]: " << lPassedBjetsCsv[0] << std::endl;
 
-	for (int i = 0; i != 16; ++i) 
+	double lTempCsvDiscr = 0.20;
+
+	for (int i = 0; i != 16; ++i, lTempCsvDiscr += 0.05) 
 	{
 		lPassedJetFraction[i] = lPassedJetsCsv[i]/lTotalNumPassedJets;
 		lPassedBjetFraction[i] = lPassedBjetsCsv[i]/lTotalNumPassedJets;
 //		std::cout << "lPassedJetFraction[" << i << "]: " << lPassedJetFraction[i] << std::endl;
 //		std::cout << "lPassedBjetFraction[" << i << "]: " << lPassedBjetFraction[i] << std::endl;
 
+		double f_x = lPassedJetFraction[i];
+		double eps_x = lPassedBjetsCsv[i]/lPassedJetsCsv[i];
+
+		h_BjetTurnOnCurve->Fill( f_x, eps_x);
+
 	}
 
-	lJetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedJetFraction);
-	lBjetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedBjetFraction);
 
-	lJetPassEfficiencyGraph->SetTitle("Efficiency of trigger - all jets");
-	lBjetPassEfficiencyGraph->SetTitle("Efficiency of trigger - b jets");
-	lJetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
-	lBjetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
-	lJetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
-	lBjetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
+	graph_JetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedJetFraction);
+	graph_BjetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedBjetFraction);
 
-	lJetPassEfficiencyGraph->SetLineWidth(2);
-	lBjetPassEfficiencyGraph->SetLineWidth(2);
-	lJetPassEfficiencyGraph->SetLineColor(2);
-	lBjetPassEfficiencyGraph->SetLineColor(2);
+
+	graph_JetPassEfficiencyGraph->SetTitle("Efficiency of trigger - all jets");
+	graph_BjetPassEfficiencyGraph->SetTitle("Efficiency of trigger - b jets");
+	graph_JetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
+	graph_BjetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
+	graph_JetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
+	graph_BjetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
+
+	graph_JetPassEfficiencyGraph->SetLineWidth(2);
+	graph_BjetPassEfficiencyGraph->SetLineWidth(2);
+	graph_JetPassEfficiencyGraph->SetLineColor(2);
+	graph_BjetPassEfficiencyGraph->SetLineColor(2);
 
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
@@ -359,7 +373,10 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 			}
 
 			if( flavour==5 ) // b jet
+			{
 				bDiscr_flav = bDiscr + "_b";
+				++lTotalNumPassedBjets;
+			}
 			else if( flavour==4 ) // c jets
 				bDiscr_flav = bDiscr + "_c";
 			else // light-flavour jet
