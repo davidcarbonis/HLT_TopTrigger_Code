@@ -38,7 +38,12 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
+// ROOT include files
 #include "TH2F.h"
+#include "TLine.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TMultiGraph.h"
 
 //
 // class declaration
@@ -47,48 +52,57 @@
 class BTaggingEfficiency : public edm::EDAnalyzer 
 {
 public:
-  explicit BTaggingEfficiency(const edm::ParameterSet&);
-  ~BTaggingEfficiency();
+	explicit BTaggingEfficiency(const edm::ParameterSet&);
+	~BTaggingEfficiency();
 
-  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
 private:
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
   
-  //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-  //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	//virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
+	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
   
-  // ----------member data ---------------------------
-  const edm::InputTag jets_;
-  const std::vector<std::string> bDiscriminators_;
+	// ----------member data ---------------------------
+	const edm::InputTag jets_;
+	const std::vector<std::string> bDiscriminators_;
   
-  bool triggerfired(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
-  bool triggerfound(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
-  unsigned int triggerIndex(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
+	bool triggerfired(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
+	bool triggerfound(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
+	unsigned int triggerIndex(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
 
-//  HLTConfigProvider hltConfig_; // to get configuration for L1s/Pre
-  edm::InputTag hlTriggerResults_;    // Input tag for TriggerResults
-  edm::InputTag hlTriggerEvent_;      // Input tag for TriggerEvent
+	//  HLTConfigProvider hltConfig_; // to get configuration for L1s/Pre
+	edm::InputTag hlTriggerResults_;    // Input tag for TriggerResults
+	edm::InputTag hlTriggerEvent_;      // Input tag for TriggerEvent
 
-  std::string triggerName_;
-  edm::InputTag collectionName_;
+	std::string triggerName_;
+	edm::InputTag collectionName_;
 
-  bool debug;
-  int counter;
-  int lTotalNumJets;
+	bool debug;
+	int counter;
 
-  double lFracJetsCsv[8];
-  double lFracBjetsCsv[8];
+	double lCsvValues[16];
+	int lTotalNumJets;
+	int lTotalNumTriggeredJets;
+	int lTotalNumPassedJets;
 
-  edm::Service<TFileService> fs;
+	double lPassedJetsCsv[16];
+	double lPassedBjetsCsv[16];
+	double lPassedJetFraction[16];
+	double lPassedBjetFraction[16];
 
-  // declare a map of b-tag discriminator histograms
-  std::map<std::string, TH2F *> bDiscriminatorsMap;
+	edm::Service<TFileService> fs;
+
+	TGraph * lJetPassEfficiencyGraph;
+	TGraph * lBjetPassEfficiencyGraph;
+
+	// declare a map of b-tag discriminator histograms
+	std::map<std::string, TH2F *> bDiscriminatorsMap;
 };
 
 //
@@ -109,10 +123,19 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
   {
  	counter = 0;
 	lTotalNumJets = 0;
-	for (int i = 0; i != 8; ++i) {
-	lFracJetsCsv[i] = {0};
-	lFracBjetsCsv[i] = {0};}
+	lTotalNumTriggeredJets = 0;
+	lTotalNumPassedJets = 0;
 
+	double lCsvValueArraryFiller = 0.20;
+
+	for (int i = 0; i != 16; ++i, lCsvValueArraryFiller += 0.05) 
+	{
+		lCsvValues[i] = lCsvValueArraryFiller;
+		lPassedJetsCsv[i] = {0};
+		lPassedBjetsCsv[i] = {0};
+		lPassedJetFraction[i] = {0};
+		lPassedBjetFraction[i] = {0};
+	}
 
    	std::string bDiscr_flav = "";
    	triggerName_ = iConfig.getUntrackedParameter<std::string>("PathName","HLT_Dimuon0_Jpsi_v");
@@ -139,10 +162,35 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 BTaggingEfficiency::~BTaggingEfficiency()
 {
  
-	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
+//	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
+//	std::cout << "lTotalNumTriggeredJets: " << lTotalNumTriggeredJets << std::endl;
+//	std::cout << "lTotalNumPassedJets: " << lTotalNumPassedJets << std::endl;
+//	std::cout << "lPassedJetsCsv[0]: " << lPassedJetsCsv[0] << std::endl;
+//	std::cout << "lPassedBjetsCsv[0]: " << lPassedBjetsCsv[0] << std::endl;
 
-	std::cout << "lFracJetsCsv[0]: " << lFracJetsCsv[0] << std::endl;
-	std::cout << "lFracBjetsCsv[0]: " << lFracBjetsCsv[0] << std::endl;
+	for (int i = 0; i != 16; ++i) 
+	{
+		lPassedJetFraction[i] = lPassedJetsCsv[i]/lTotalNumPassedJets;
+		lPassedBjetFraction[i] = lPassedBjetsCsv[i]/lTotalNumPassedJets;
+//		std::cout << "lPassedJetFraction[" << i << "]: " << lPassedJetFraction[i] << std::endl;
+//		std::cout << "lPassedBjetFraction[" << i << "]: " << lPassedBjetFraction[i] << std::endl;
+
+	}
+
+	lJetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedJetFraction);
+	lBjetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedBjetFraction);
+
+	lJetPassEfficiencyGraph->SetTitle("Efficiency of trigger - all jets");
+	lBjetPassEfficiencyGraph->SetTitle("Efficiency of trigger - b jets");
+	lJetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
+	lBjetPassEfficiencyGraph->GetXaxis()->SetTitle("CSV Cut");
+	lJetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
+	lBjetPassEfficiencyGraph->GetYaxis()->SetTitle("Efficiency");
+
+	lJetPassEfficiencyGraph->SetLineWidth(2);
+	lBjetPassEfficiencyGraph->SetLineWidth(2);
+	lJetPassEfficiencyGraph->SetLineColor(2);
+	lBjetPassEfficiencyGraph->SetLineColor(2);
 
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
@@ -267,7 +315,7 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 // --------------------------------------------------------------------------------	
 // --------------------------------------------------------------------------------	
 
-	lTotalNumJets = lTotalNumJets + jets->size();
+	lTotalNumJets = lTotalNumJets + jets->size();	// Get total number of jets
 
 	std::string bDiscr_flav = "";
 	uint32_t i = 1;
@@ -276,6 +324,7 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	{
 		if (triggerFired)  continue;	// Only continue if trigger has been fired!
 		//std::cout << "Trigger Fired!" << std::endl;
+		++lTotalNumTriggeredJets;
 		int flavour = std::abs( jet->partonFlavour() );
 		//std::std::cout << "i: " << i << std::std::endl;
 
@@ -285,8 +334,10 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 			if( flavour==0 ) continue; // skip jets with undefined flavour
 			if( jet->pt()<30. || std::abs(jet->eta())>3.0 ) continue; // skip jets with low pT or outside the tracker acceptance
 			
+			++lTotalNumPassedJets;
+
 			int lArrayIt = 0;
-			for (float lBdiscrIt = 0.20; lBdiscrIt <= 0.90; lBdiscrIt += 0.10, ++lArrayIt )
+			for (float lBdiscrIt = 0.20; lBdiscrIt <= 0.90; lBdiscrIt += 0.05, ++lArrayIt )
 			{
 				//std::cout << "lBdiscrIt: " << lBdiscrIt << std::endl;;
 				//std::cout << "jet->bDiscriminator(bDiscr): " << jet->bDiscriminator(bDiscr) << std::endl;
@@ -298,10 +349,10 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 					//std::cout << "jet->bDiscriminator(bDiscr): " << jet->bDiscriminator(bDiscr) << std::endl;
 					//std::cout << "lArrayIt: " << lArrayIt << std::endl;
 
-					++lFracJetsCsv[lArrayIt];
+					++lPassedJetsCsv[lArrayIt];
 					if (flavour == 5)
 					{
-						++lFracBjetsCsv[lArrayIt];
+						++lPassedBjetsCsv[lArrayIt];
 					}
 				}
 				
