@@ -286,17 +286,25 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 			if( jet->pt()<30. || std::abs(jet->eta())>3.0 ) continue; // skip jets with low pT or outside the tracker acceptance
 			
 			int lArrayIt = 0;
-			for (double lBdiscrIt = 0.20; lBdiscrIt != 1.00; lBdiscrIt += 0.10, ++lArrayIt )
+			for (float lBdiscrIt = 0.20; lBdiscrIt <= 0.90; lBdiscrIt += 0.10, ++lArrayIt )
 			{
+				//std::cout << "lBdiscrIt: " << lBdiscrIt << std::endl;;
+				//std::cout << "jet->bDiscriminator(bDiscr): " << jet->bDiscriminator(bDiscr) << std::endl;
+				//std::cout << "jet->bDiscriminator(bDiscr) type: " << typeid (jet->bDiscriminator(bDiscr)).name() << std::endl;;
+
 				if (jet->bDiscriminator(bDiscr) >= lBdiscrIt)
 				{
+					//std::cout << "lBdiscrIt: " << lBdiscrIt << std::endl;;
+					//std::cout << "jet->bDiscriminator(bDiscr): " << jet->bDiscriminator(bDiscr) << std::endl;
+					//std::cout << "lArrayIt: " << lArrayIt << std::endl;
+
 					++lFracJetsCsv[lArrayIt];
 					if (flavour == 5)
 					{
 						++lFracBjetsCsv[lArrayIt];
 					}
 				}
-
+				
 			}
 
 			if( flavour==5 ) // b jet
