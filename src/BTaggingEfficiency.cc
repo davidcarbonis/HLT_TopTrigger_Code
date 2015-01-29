@@ -163,7 +163,7 @@ BTaggingEfficiency::~BTaggingEfficiency()
 {
 
 
-	h_BjetTurnOnCurve = fs->make<TH2F>("h_AltBjetTurnOnCurve", "Turn-on Curve (b jets)", 80, 0.0, 20.0, 100, 0.0, 1.0);
+	h_BjetTurnOnCurve = fs->make<TH2F>("h_AltjetTurnOnCurve", "Turn-on Curve (b jets)", 80, 0.0, 20.0, 100, 0.0, 1.0);
 
  
 //	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
