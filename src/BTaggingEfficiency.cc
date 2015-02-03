@@ -174,6 +174,25 @@ BTaggingEfficiency::~BTaggingEfficiency()
 	h_JetPassEfficiency = fs->make<TH2F>("h_JetPassEfficiency", "Jet Pass Efficiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
 	h_BjetPassEfficiency = fs->make<TH2F>("h_BjetPassEfficiency", "b-jet Pass Effifiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
  
+
+	h_OldBjetTurnOnCurve->SetTitle("Turn-on Curves for b-jets");
+	h_OldBjetTurnOnCurve->GetXaxis()->SetTitle("Offline Cut Acceptance Efficiency");
+	h_OldBjetTurnOnCurve->GetYaxis()->SetTitle("Trigger Efficiency wrt. offline Cut");
+
+	h_BjetTurnOnCurve->SetTitle("Turn-on Curves for b-jets");
+	h_BjetTurnOnCurve->GetXaxis()->SetTitle("Offline Cut Acceptance Efficiency");
+	h_BjetTurnOnCurve->GetYaxis()->SetTitle("Trigger Efficiency wrt. offline Cut");
+
+
+	h_JetPassEfficiency->SetTitle("Efficiency of b-tag trigger");
+	h_JetPassEfficiency->GetXaxis()->SetTitle("CSV Cut");
+	h_JetPassEfficiency->GetYaxis()->SetTitle("Efficiency");
+
+
+	h_BjetPassEfficiency->SetTitle("Efficiency of b-tag trigger - b-jets");
+	h_BjetPassEfficiency->GetXaxis()->SetTitle("CSV Cut");
+	h_BjetPassEfficiency->GetYaxis()->SetTitle("Efficiency");
+
 //	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
 //	std::cout << "lTotalNumTriggeredJets: " << lTotalNumTriggeredJets << std::endl;
 //	std::cout << "lTotalNumPassedJets: " << lTotalNumPassedJets << std::endl;
