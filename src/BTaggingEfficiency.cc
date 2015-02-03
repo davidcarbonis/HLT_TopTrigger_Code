@@ -82,20 +82,26 @@ private:
 	bool debug;
 	int counter;
 
-	double lCsvValues[16];
+	double lCsvValues[22];
 	int lTotalNumJets;
 	int lTotalNumTriggeredJets;
 	int lTotalNumPassedJets;
 	int lTotalNumPassedBjets;
 
-	double lPassedJetsCsv[16];
-	double lPassedBjetsCsv[16];
-	double lPassedJetFraction[16];
-	double lPassedBjetFraction[16];
+	double lPassedJetsCsv[22];
+	double lRejJetsCsv[22];
+	double lPassedBjetsCsv[22];
+	double lPassedJetFraction[22];
+	double lRejJetFraction[22];
+	double lPassedBjetFraction[22];
 
 	edm::Service<TFileService> fs;
 
+	TH2F * h_OldBjetTurnOnCurve;
 	TH2F * h_BjetTurnOnCurve;
+
+	TH2F * h_JetPassEfficiency;
+	TH2F * h_BjetPassEfficiency;
 
 	TGraph * graph_JetPassEfficiencyGraph;
 	TGraph * graph_BjetPassEfficiencyGraph;
@@ -126,15 +132,16 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 	lTotalNumPassedJets = 0;
 	lTotalNumPassedBjets = 0;
 
-	double lCsvValueArraryFiller = 0.20;
+	double lCsvValueArraryFiller = 0.00;
 
-	for (int i = 0; i != 16; ++i, lCsvValueArraryFiller += 0.05) 
+	for (int i = 0; i != 22; ++i, lCsvValueArraryFiller += 0.05) 
 	{
 		lCsvValues[i] = lCsvValueArraryFiller;
-		lPassedJetsCsv[i] = {0};
-		lPassedBjetsCsv[i] = {0};
-		lPassedJetFraction[i] = {0};
-		lPassedBjetFraction[i] = {0};
+		lPassedJetsCsv[i] = {0.0};
+		lPassedBjetsCsv[i] = {0.0};
+		lPassedJetFraction[i] = {0.0};
+		lRejJetFraction[i] = {0.0};
+		lPassedBjetFraction[i] = {0.0};
 	}
 
    	std::string bDiscr_flav = "";
@@ -162,9 +169,10 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 BTaggingEfficiency::~BTaggingEfficiency()
 {
 
-
-	h_BjetTurnOnCurve = fs->make<TH2F>("h_AltjetTurnOnCurve", "Turn-on Curve (b jets)", 80, 0.0, 20.0, 100, 0.0, 1.0);
-
+	h_OldBjetTurnOnCurve = fs->make<TH2F>("h_OldBjetTurnOnCurve", "Old Turn-on Curve (b jets)", 100, 0.0, 1.0, 100, 0.0, 1.0);
+	h_BjetTurnOnCurve = fs->make<TH2F>("h_BjetTurnOnCurve", "Turn-on Curve (b jets)", 100, 0.0, 1.0, 100, 0.0, 1.0);
+	h_JetPassEfficiency = fs->make<TH2F>("h_JetPassEfficiency", "Jet Pass Efficiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
+	h_BjetPassEfficiency = fs->make<TH2F>("h_BjetPassEfficiency", "b-jet Pass Effifiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
  
 //	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
 //	std::cout << "lTotalNumTriggeredJets: " << lTotalNumTriggeredJets << std::endl;
@@ -173,25 +181,31 @@ BTaggingEfficiency::~BTaggingEfficiency()
 //	std::cout << "lPassedJetsCsv[0]: " << lPassedJetsCsv[0] << std::endl;
 //	std::cout << "lPassedBjetsCsv[0]: " << lPassedBjetsCsv[0] << std::endl;
 
-	double lTempCsvDiscr = 0.20;
+	double lTempCsvDiscr = 0.0;
 
-	for (int i = 0; i != 16; ++i, lTempCsvDiscr += 0.05) 
+	for (int i = 0; i != 22; ++i, lTempCsvDiscr += 0.05) 
 	{
 		lPassedJetFraction[i] = lPassedJetsCsv[i]/lTotalNumPassedJets;
+		lRejJetFraction[i] = lRejJetsCsv[i]/lTotalNumPassedJets;
 		lPassedBjetFraction[i] = lPassedBjetsCsv[i]/lTotalNumPassedJets;
 //		std::cout << "lPassedJetFraction[" << i << "]: " << lPassedJetFraction[i] << std::endl;
 //		std::cout << "lPassedBjetFraction[" << i << "]: " << lPassedBjetFraction[i] << std::endl;
 
-		double f_x = lPassedJetFraction[i];
+		double Old_f_x = lPassedJetFraction[i];
+		double f_x = lRejJetFraction[i];
 		double eps_x = lPassedBjetsCsv[i]/lPassedJetsCsv[i];
 
-		h_BjetTurnOnCurve->Fill( f_x, eps_x);
+		h_JetPassEfficiency->Fill( lTempCsvDiscr, lPassedJetFraction[i] );
+		h_BjetPassEfficiency->Fill (lTempCsvDiscr, lPassedBjetFraction[i] );
+
+		h_OldBjetTurnOnCurve->Fill( Old_f_x, eps_x );
+		h_BjetTurnOnCurve->Fill( f_x, eps_x );
 
 	}
 
 
-	graph_JetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedJetFraction);
-	graph_BjetPassEfficiencyGraph = fs->make<TGraph>(16, lCsvValues, lPassedBjetFraction);
+	graph_JetPassEfficiencyGraph = fs->make<TGraph>(22, lCsvValues, lPassedJetFraction);
+	graph_BjetPassEfficiencyGraph = fs->make<TGraph>(22, lCsvValues, lPassedBjetFraction);
 
 
 	graph_JetPassEfficiencyGraph->SetTitle("Efficiency of trigger - all jets");
@@ -351,11 +365,16 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 			++lTotalNumPassedJets;
 
 			int lArrayIt = 0;
-			for (float lBdiscrIt = 0.20; lBdiscrIt <= 0.90; lBdiscrIt += 0.05, ++lArrayIt )
+			for (float lBdiscrIt = 0.0; lBdiscrIt <= 1.00; lBdiscrIt += 0.05, ++lArrayIt )
 			{
 				//std::cout << "lBdiscrIt: " << lBdiscrIt << std::endl;;
 				//std::cout << "jet->bDiscriminator(bDiscr): " << jet->bDiscriminator(bDiscr) << std::endl;
 				//std::cout << "jet->bDiscriminator(bDiscr) type: " << typeid (jet->bDiscriminator(bDiscr)).name() << std::endl;;
+				if (jet->bDiscriminator(bDiscr) <=lBdiscrIt)
+				{
+					++lRejJetsCsv[lArrayIt];
+				}
+
 
 				if (jet->bDiscriminator(bDiscr) >= lBdiscrIt)
 				{
