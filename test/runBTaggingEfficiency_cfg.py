@@ -13,16 +13,14 @@ options.register('reportEvery', 1000,
     VarParsing.varType.int,
     "Report every N events (default is N=10)"
 )
+
+
 options.register('outputFilename', 'Efficiecny_hists.root',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "Output file name"
 )
-#options.register('process', 'ttbar',
-#    VarParsing.multiplicity.singleton,
-#    VarParsing.varType.string,
-#    "MC-simulated event type"
-#)
+
 options.register('wantSummary', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
@@ -60,10 +58,10 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         #'/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
-	#AOD - PU20
-	#'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/AODSIM/PU40bx25_tsg_PHYS14_25_V1-v1/00000/00692623-4270-E411-B9E7-0025905A612A.root'
+	#MiniAOD - PU20
+	'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/007B37D4-8B70-E411-BC2D-0025905A6066.root'
 	#MiniAOD - PU40
-	'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/PU40bx25_tsg_PHYS14_25_V1-v1/00000/06E41ADB-7870-E411-8850-0025905A605E.root'
+	#'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/PU40bx25_tsg_PHYS14_25_V1-v1/00000/06E41ADB-7870-E411-8850-0025905A605E.root'
     )
 )
 
@@ -84,7 +82,7 @@ process.bTaggingEfficiency = cms.EDAnalyzer('BTaggingEfficiency',
 
     jets = cms.InputTag('slimmedJets'), # input jet collection name
     TriggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD", "", "HLT"),
-    PathName = cms.untracked.string("HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1"), #HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
+    PathName = cms.untracked.string("HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1"), #HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
 
     debug = cms.untracked.bool(False),
     bDiscriminators = cms.vstring(      # list of b-tag discriminators to access
