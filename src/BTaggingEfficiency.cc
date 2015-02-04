@@ -86,11 +86,12 @@ private:
 	int lTotalNumJets;
 	int lTotalNumTriggeredJets;
 	int lTotalNumPassedJets;
+	int lTotalNumRejJets;
 	int lTotalNumPassedBjets;
 
 	double lPassedJetsCsv[22];
 	double lRejJetsCsv[22];
-	double lPassedBjetsCsv[22];
+	double lPassedTriggeredBjetsCsv[22];
 	double lPassedJetFraction[22];
 	double lRejJetFraction[22];
 	double lPassedBjetFraction[22];
@@ -130,6 +131,7 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 	lTotalNumJets = 0;
 	lTotalNumTriggeredJets = 0;
 	lTotalNumPassedJets = 0;
+	lTotalNumRejJets = 0;
 	lTotalNumPassedBjets = 0;
 
 	double lCsvValueArraryFiller = 0.00;
@@ -138,7 +140,7 @@ BTaggingEfficiency::BTaggingEfficiency(const edm::ParameterSet& iConfig) :
 	{
 		lCsvValues[i] = lCsvValueArraryFiller;
 		lPassedJetsCsv[i] = {0.0};
-		lPassedBjetsCsv[i] = {0.0};
+		lPassedTriggeredBjetsCsv[i] = {0.0};
 		lPassedJetFraction[i] = {0.0};
 		lRejJetFraction[i] = {0.0};
 		lPassedBjetFraction[i] = {0.0};
@@ -173,7 +175,7 @@ BTaggingEfficiency::~BTaggingEfficiency()
 	h_BjetTurnOnCurve = fs->make<TH2F>("h_BjetTurnOnCurve", "Turn-on Curve (b jets)", 100, 0.0, 1.0, 100, 0.0, 1.0);
 	h_JetPassEfficiency = fs->make<TH2F>("h_JetPassEfficiency", "Jet Pass Efficiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
 	h_BjetPassEfficiency = fs->make<TH2F>("h_BjetPassEfficiency", "b-jet Pass Effifiency", 100, 0.0, 1.0, 100, 0.0, 1.0);
- 
+
 
 	h_OldBjetTurnOnCurve->SetTitle("Turn-on Curves for b-jets");
 	h_OldBjetTurnOnCurve->GetXaxis()->SetTitle("Offline Cut Acceptance Efficiency");
@@ -188,17 +190,18 @@ BTaggingEfficiency::~BTaggingEfficiency()
 	h_JetPassEfficiency->GetXaxis()->SetTitle("CSV Cut");
 	h_JetPassEfficiency->GetYaxis()->SetTitle("Efficiency");
 
-
 	h_BjetPassEfficiency->SetTitle("Efficiency of b-tag trigger - b-jets");
 	h_BjetPassEfficiency->GetXaxis()->SetTitle("CSV Cut");
 	h_BjetPassEfficiency->GetYaxis()->SetTitle("Efficiency");
 
-//	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
+	std::cout << "lTotalNumJets: " << lTotalNumJets << std::endl;
+	
+//	std::cout << "lTotalNumRejJets: " << lTotalNumRejJets << std::endl;
 //	std::cout << "lTotalNumTriggeredJets: " << lTotalNumTriggeredJets << std::endl;
 //	std::cout << "lTotalNumPassedJets: " << lTotalNumPassedJets << std::endl;
 //	std::cout << "lTotalNumPassedBjets: " << lTotalNumPassedBjets << std::endl;
 //	std::cout << "lPassedJetsCsv[0]: " << lPassedJetsCsv[0] << std::endl;
-//	std::cout << "lPassedBjetsCsv[0]: " << lPassedBjetsCsv[0] << std::endl;
+//	std::cout << "lPassedTriggeredBjetsCsv[0]: " << lPassedTriggeredBjetsCsv[0] << std::endl;
 
 	double lTempCsvDiscr = 0.0;
 
@@ -206,19 +209,41 @@ BTaggingEfficiency::~BTaggingEfficiency()
 	{
 		lPassedJetFraction[i] = lPassedJetsCsv[i]/lTotalNumPassedJets;
 		lRejJetFraction[i] = lRejJetsCsv[i]/lTotalNumPassedJets;
-		lPassedBjetFraction[i] = lPassedBjetsCsv[i]/lTotalNumPassedJets;
-//		std::cout << "lPassedJetFraction[" << i << "]: " << lPassedJetFraction[i] << std::endl;
+		lPassedBjetFraction[i] = lPassedTriggeredBjetsCsv[i]/lTotalNumPassedJets;
+//		std::cout << "1 - lPassedJetFraction[" << i << "]: " << (1-lPassedJetFraction[i]) << std::endl;
+//		std::cout << "lRejJetFraction[" << i << "]: " << lRejJetFraction[i] << std::endl;
 //		std::cout << "lPassedBjetFraction[" << i << "]: " << lPassedBjetFraction[i] << std::endl;
 
-		double Old_f_x = lPassedJetFraction[i];
-		double f_x = lRejJetFraction[i];
-		double eps_x = lPassedBjetsCsv[i]/lPassedJetsCsv[i];
+		double Old_f_x = -log10(1-lTempCsvDiscr);// lPassedJetsCsv[i]/lTotalNumJets;
+		double f_x = lPassedJetFraction[i];
+		double eps_x = lPassedTriggeredBjetsCsv[i]/lPassedJetsCsv[i];
+
+//		std::cout << "Old_f_x: " << Old_f_x << std::endl;
+//		std::cout << "f_x: " << f_x << std::endl;
+//		std::cout << "eps_x: " << eps_x << std::endl;
+
+		if (lPassedJetFraction [i] > 1.0) 
+		{
+		 	std::cout << " WARNING: lPassedJetFraction [" << i << "]: " << lPassedJetFraction[i] << " is greater than 1.0!" << std::endl;
+			return;
+  		}
+
+		if (lPassedBjetFraction [i] > 1.0) 
+		{
+		 	std::cout << " WARNING: lPassedBjetFraction [" << i << "]: " << lPassedBjetFraction[i] << " is greater than 1.0!" << std::endl;
+			return;
+  		}
+
+		if (eps_x > 1.0)
+		{
+			std::cout << " WARNING: eps_x = lPassedTriggeredBjetsCsv[" << i << "]/lPassedJetsCsv[" << i << "]: " << eps_x << " is greater than 1.0!" << std::endl;
+		}
 
 		h_JetPassEfficiency->Fill( lTempCsvDiscr, lPassedJetFraction[i] );
 		h_BjetPassEfficiency->Fill (lTempCsvDiscr, lPassedBjetFraction[i] );
 
 		h_OldBjetTurnOnCurve->Fill( Old_f_x, eps_x );
-		h_BjetTurnOnCurve->Fill( f_x, eps_x );
+		h_BjetTurnOnCurve->Fill( 1-f_x, eps_x );
 
 	}
 
@@ -378,9 +403,14 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 		// fill discriminator histograms
 		for( const std::string &bDiscr : bDiscriminators_ )
 		{
-			if( flavour==0 ) continue; // skip jets with undefined flavour
-			if( jet->pt()<30. || std::abs(jet->eta())>3.0 ) continue; // skip jets with low pT or outside the tracker acceptance
-			
+			if( flavour==0 ) 
+			{
+				continue; // skip jets with undefined flavour
+			}
+			if( jet->pt()<30. || std::abs(jet->eta())>3.0 ) 
+			{
+				continue; // skip jets with low pT or outside the tracker acceptance
+			}
 			++lTotalNumPassedJets;
 
 			int lArrayIt = 0;
@@ -404,7 +434,7 @@ BTaggingEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 					++lPassedJetsCsv[lArrayIt];
 					if (flavour == 5)
 					{
-						++lPassedBjetsCsv[lArrayIt];
+						++lPassedTriggeredBjetsCsv[lArrayIt];
 					}
 				}
 				
