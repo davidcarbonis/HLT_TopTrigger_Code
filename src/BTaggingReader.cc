@@ -88,7 +88,6 @@ private:
   edm::Service<TFileService> fs;
 
   TTree *mytree_;
-  TFile *outFile_;
 };
 
 //
@@ -107,9 +106,8 @@ BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
   jets_(iConfig.getParameter<edm::InputTag>("jets")),
   bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators"))
 {
-  outFile_ = new TFile ("Outfile.root", "RECREATE");
-  mytree_ = new TTree ("tree","tree");
 
+  mytree_ = fs->make<TTree>("tree","tree");
   mytree_->Branch("pT",&pT,"pT/F");
   mytree_->Branch("eta",&eta,"eta/F");
   mytree_->Branch("flavour",&flavour,"flavour/I");
@@ -129,8 +127,6 @@ BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
 
 BTaggingReader::~BTaggingReader()
 {
-  outFile_->Write();
-  outFile_->Close();
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
 
@@ -273,7 +269,6 @@ BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
   
-  outFile_->cd();
   mytree_->Fill();
 	
 }

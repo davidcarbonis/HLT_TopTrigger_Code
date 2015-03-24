@@ -14,6 +14,12 @@ options.register('reportEvery', 1000,
     "Report every N events (default is N=10)"
 )
 
+options.register('outputFilename', 'Output.root',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "Output file name"
+)
+
 options.register('wantSummary', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
@@ -54,6 +60,11 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+## Output file
+process.TFileService = cms.Service("TFileService",
+  fileName = cms.string(options.outputFilename)
+)
+
 ## Options and Output Report
 process.options   = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(options.wantSummary),
@@ -62,6 +73,8 @@ process.options   = cms.untracked.PSet(
 
 ## Initialize analyzer
 process.bTaggingReader = cms.EDAnalyzer('BTaggingReader',
+
+    outputFilename=cms.untracked.string("Output.root"),
 
 #    outputFilename=cms.untracked.string("bTaggingReaderOutput.root"),
 
