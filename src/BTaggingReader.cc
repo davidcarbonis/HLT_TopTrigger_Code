@@ -87,7 +87,7 @@ private:
 
   edm::Service<TFileService> fs;
 
-  TTree *mytree_;
+  TTree *mytree;
 };
 
 //
@@ -107,12 +107,12 @@ BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
   bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators"))
 {
 
-  mytree_ = fs->make<TTree>("tree","tree");
-  mytree_->Branch("pT",&pT,"pT/F");
-  mytree_->Branch("eta",&eta,"eta/F");
-  mytree_->Branch("flavour",&flavour,"flavour/I");
-  mytree_->Branch("CSV",&CSV,"CSV/F");
-  mytree_->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
+  mytree = fs->make<TTree>("tree","tree");
+  mytree->Branch("pT",&pT,"pT/F");
+  mytree->Branch("eta",&eta,"eta/F");
+  mytree->Branch("flavour",&flavour,"flavour/I");
+  mytree->Branch("CSV",&CSV,"CSV/F");
+  mytree->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
 
 
   std::string bDiscr_flav = "";
@@ -269,7 +269,7 @@ BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
   
-  mytree_->Fill();
+  mytree->Fill();
 	
 }
 
