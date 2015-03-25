@@ -35,7 +35,6 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 // ROOT include files
-#include "TFile.h"
 #include "TTree.h"
 
 //
@@ -106,21 +105,14 @@ BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
   jets_(iConfig.getParameter<edm::InputTag>("jets")),
   bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators"))
 {
-
-  mytree = fs->make<TTree>("tree","tree");
-  mytree->Branch("pT",&pT,"pT/F");
-  mytree->Branch("eta",&eta,"eta/F");
-  mytree->Branch("flavour",&flavour,"flavour/I");
-  mytree->Branch("CSV",&CSV,"CSV/F");
-  mytree->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
-
-
   std::string bDiscr_flav = "";
   triggerName_ = iConfig.getUntrackedParameter<std::string>("PathName","HLT_Dimuon0_Jpsi_v");
   hlTriggerResults_  = iConfig.getUntrackedParameter<edm::InputTag>("TriggerResultsTag", edm::InputTag("TriggerResults", "", "HLT"));
   hlTriggerEvent_    = iConfig.getUntrackedParameter<edm::InputTag>("TriggerEventTag", edm::InputTag("hltTriggerSummaryAOD", "", "HLT"));
 
   debug = iConfig.getUntrackedParameter<bool>("debug",true);
+
+  mytree = fs->make<TTree>( "tree", "tree" );
 
 }
 
@@ -249,6 +241,13 @@ BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	continue; // skip jets with low pT or outside the tracker acceptance
       }
 
+
+      mytree->Branch("pT",&pT,"pT/F");
+      mytree->Branch("eta",&eta,"eta/F");
+      mytree->Branch("flavour",&flavour,"flavour/I");
+      mytree->Branch("CSV",&CSV,"CSV/F");
+      mytree->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
+
       pT = jet->pt();
       eta = jet->eta();
       flavour= jet->partonFlavour();
@@ -267,10 +266,10 @@ BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     {
       triggerFlag = 0;
     }
+    mytree->Fill();
+
   }
-  
-  mytree->Fill();
-	
+ 	
 }
 
 
