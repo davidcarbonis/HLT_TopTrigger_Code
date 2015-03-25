@@ -8,16 +8,10 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing ('python')
 
-options.register('reportEvery', 1000,
+options.register('reportEvery', 100,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     "Report every N events (default is N=10)"
-)
-
-options.register('outputFilename', 'Output.root',
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.string,
-    "Output file name"
 )
 
 options.register('wantSummary', False,
@@ -62,7 +56,7 @@ process.source = cms.Source("PoolSource",
 
 ## Output file
 process.TFileService = cms.Service("TFileService",
-  fileName = cms.string(options.outputFilename)
+  fileName = cms.string('Output.root'),
 )
 
 ## Options and Output Report
@@ -74,9 +68,6 @@ process.options   = cms.untracked.PSet(
 ## Initialize analyzer
 process.bTaggingReader = cms.EDAnalyzer('BTaggingReader',
 
-    outputFilename=cms.untracked.string("Output.root"),
-
-#    outputFilename=cms.untracked.string("bTaggingReaderOutput.root"),
 
     jets = cms.InputTag('slimmedJets'), # input jet collection name - miniAODSim uses 'slimmedJets'
     TriggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD", "", "HLT"),
