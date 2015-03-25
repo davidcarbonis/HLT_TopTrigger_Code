@@ -14,13 +14,6 @@ options.register('reportEvery', 1000,
     "Report every N events (default is N=10)"
 )
 
-options.register('outputFilename', 'output.root',
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.string,
-    "Output file name"
-)
-
-
 options.register('wantSummary', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
@@ -67,7 +60,7 @@ process.source = cms.Source("PoolSource",
 
 ## Output file
 process.TFileService = cms.Service("TFileService",
-  fileName = cms.string(options.outputFilename)
+  fileName = cms.string('Output.root'),
 )
 
 ## Options and Output Report
@@ -79,7 +72,6 @@ process.options   = cms.untracked.PSet(
 ## Initialize analyzer
 process.bTaggingReader = cms.EDAnalyzer('BTaggingReader',
 
-    outputFilename=cms.untracked.string("placeholderOutputName.root"),
     jets = cms.InputTag('slimmedJets'), # input jet collection name
     TriggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD", "", "HLT"),
     PathName = cms.untracked.string("HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1"), #HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
