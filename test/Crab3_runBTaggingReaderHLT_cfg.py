@@ -8,7 +8,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing ('python')
 
-options.register('reportEvery', 100,
+options.register('reportEvery', 1000,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     "Report every N events (default is N=10)"
@@ -50,7 +50,11 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ## Input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-	'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/MINIAODSIM/007B37D4-8B70-E411-BC2D-0025905A6066.root'
+        #'/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root'
+	#MiniAOD - PU20
+	'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/007B37D4-8B70-E411-BC2D-0025905A6066.root'
+	#MiniAOD - PU40
+	#'/store/mc/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/PU40bx25_tsg_PHYS14_25_V1-v1/00000/06E41ADB-7870-E411-8850-0025905A605E.root'
     )
 )
 
@@ -66,20 +70,17 @@ process.options   = cms.untracked.PSet(
 )
 
 ## Initialize analyzer
-process.bTaggingReader = cms.EDAnalyzer('BTaggingReader',
+process.bTaggingReaderHLT = cms.EDAnalyzer('BTaggingReaderHLT',
 
-
-    jets = cms.InputTag('slimmedJets'), # input jet collection name - miniAODSim uses 'slimmedJets'
+    jets = cms.InputTag('slimmedJets'), # input jet collection name
     TriggerEventTag = cms.untracked.InputTag("hltTriggerSummaryAOD", "", "HLT"),
-    PathName = cms.untracked.string("HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1"), 
-##Old Algos
-#HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
+    PathName = cms.untracked.string("HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1"), #HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
 
     debug = cms.untracked.bool(False),
-    bDiscriminators = cms.vstring(     
+    bDiscriminators = cms.vstring(      # list of b-tag discriminators to access
         'combinedInclusiveSecondaryVertexV2BJetTags',
     )
 )
 
 ## Let it run
-process.p = cms.Path(process.bTaggingReader)
+process.p = cms.Path(process.bTaggingReaderHLT)

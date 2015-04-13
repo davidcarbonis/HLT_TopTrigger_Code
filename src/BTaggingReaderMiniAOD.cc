@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
 // Package:    Demo/DemoAnalyser
-// Class:      BTaggingReader
+// Class:      BTaggingReaderMiniAOD
 // 
-/**\class BTaggingReader BTaggingReader.cc Demo/DemoAnalyser/src/BTaggingReader.cc
+/**\class BTaggingReaderMiniAOD BTaggingReaderMiniAOD.cc Demo/DemoAnalyser/src/BTaggingReaderMiniAOD.cc
 
  Description: [one line class summary]
 
@@ -41,11 +41,11 @@
 // class declaration
 //
 
-class BTaggingReader : public edm::EDAnalyzer 
+class BTaggingReaderMiniAOD: public edm::EDAnalyzer 
 {
 public:
-  explicit BTaggingReader(const edm::ParameterSet&);
-  ~BTaggingReader();
+  explicit BTaggingReaderMiniAOD(const edm::ParameterSet&);
+  ~BTaggingReaderMiniAOD();
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -86,7 +86,7 @@ private:
 
   edm::Service<TFileService> fs;
 
-  TTree *mytree;
+  TTree *mytree_;
 };
 
 //
@@ -100,7 +100,7 @@ private:
 //
 // constructors and destructor
 //
-BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
+BTaggingReaderMiniAOD::BTaggingReaderMiniAOD(const edm::ParameterSet& iConfig) :
 
   jets_(iConfig.getParameter<edm::InputTag>("jets")),
   bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators"))
@@ -112,19 +112,25 @@ BTaggingReader::BTaggingReader(const edm::ParameterSet& iConfig) :
 
   debug = iConfig.getUntrackedParameter<bool>("debug",true);
 
-  mytree = fs->make<TTree>( "tree", "tree" );
+  mytree_ = fs->make<TTree>( "tree", "tree" );
+
+  mytree_->Branch("pT",&pT,"pT/F");
+  mytree_->Branch("eta",&eta,"eta/F");
+  mytree_->Branch("flavour",&flavour,"flavour/I");
+  mytree_->Branch("CSV",&CSV,"CSV/F");
+  mytree_->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
 
 }
 
 
-BTaggingReader::~BTaggingReader()
+BTaggingReaderMiniAOD::~BTaggingReaderMiniAOD()
 {
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
 
 }
 
-bool BTaggingReader::triggerfired(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
+bool BTaggingReaderMiniAOD::triggerfired(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
   const edm::TriggerNames TrigNames_ = iEvent.triggerNames(*triggerResultsHandle_);
   const unsigned int ntrigs = triggerResultsHandle_->size();
   for (unsigned int itr=0; itr<ntrigs; itr++){
@@ -135,7 +141,7 @@ bool BTaggingReader::triggerfired(const edm::Event& iEvent, edm::Handle<edm::Tri
   return false;
 }
 
-bool BTaggingReader::triggerfound(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
+bool BTaggingReaderMiniAOD::triggerfound(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
   const edm::TriggerNames TrigNames_ = iEvent.triggerNames(*triggerResultsHandle_);
   const unsigned int ntrigs = triggerResultsHandle_->size();
   for (unsigned int itr=0; itr<ntrigs; itr++){
@@ -145,7 +151,7 @@ bool BTaggingReader::triggerfound(const edm::Event& iEvent, edm::Handle<edm::Tri
   return false;
 }
 
-unsigned int BTaggingReader::triggerIndex(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
+unsigned int BTaggingReaderMiniAOD::triggerIndex(const edm::Event& iEvent, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname){
   const edm::TriggerNames TrigNames_ = iEvent.triggerNames(*triggerResultsHandle_);
   const unsigned int ntrigs = triggerResultsHandle_->size();
   unsigned int itr;
@@ -164,7 +170,7 @@ unsigned int BTaggingReader::triggerIndex(const edm::Event& iEvent, edm::Handle<
 
 // ------------ method called for each event  ------------
 void
-BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+BTaggingReaderMiniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   counter++;
 
@@ -235,60 +241,53 @@ BTaggingReader::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     for( const std::string &bDiscr : bDiscriminators_ )
     {
-      
+     
       if( jet->pt()<30. || std::abs(jet->eta())>3.0 ) 
       {
 	continue; // skip jets with low pT or outside the tracker acceptance
       }
 
-
-      mytree->Branch("pT",&pT,"pT/F");
-      mytree->Branch("eta",&eta,"eta/F");
-      mytree->Branch("flavour",&flavour,"flavour/I");
-      mytree->Branch("CSV",&CSV,"CSV/F");
-      mytree->Branch("triggerFlag",&triggerFlag,"triggerFlag/I");
-
       pT = jet->pt();
       eta = jet->eta();
       flavour= jet->partonFlavour();
       CSV = jet->bDiscriminator(bDiscr);
-	      
+
     }
     
-    
-    
+   
     // Fill trigger fired Flag
     if (triggerFired)  
     {
-      triggerFlag = 1;;	
+      triggerFlag = 1;	
     }
     else
     {
       triggerFlag = 0;
     }
-    mytree->Fill();
+
+    mytree_->Fill();
 
   }
- 	
+
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-BTaggingReader::beginJob()
+BTaggingReaderMiniAOD::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-BTaggingReader::endJob() 
+BTaggingReaderMiniAOD::endJob() 
 {
 }
 
 // ------------ method called when starting to processes a run  ------------
 /*
 void 
-BTaggingReader::beginRun(edm::Run const&, edm::EventSetup const&)
+BTaggingReaderMiniAOD::beginRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -296,7 +295,7 @@ BTaggingReader::beginRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when ending the processing of a run  ------------
 /*
 void 
-BTaggingReader::endRun(edm::Run const&, edm::EventSetup const&)
+BTaggingReaderMiniAOD::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
 */
@@ -304,7 +303,7 @@ BTaggingReader::endRun(edm::Run const&, edm::EventSetup const&)
 // ------------ method called when starting to processes a luminosity block  ------------
 /*
 void 
-BTaggingReader::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+BTaggingReaderMiniAOD::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
@@ -312,14 +311,14 @@ BTaggingReader::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetu
 // ------------ method called when ending the processing of a luminosity block  ------------
 /*
 void 
-BTaggingReader::std::endluminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
+BTaggingReaderMiniAOD::std::endluminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
 {
 }
 */
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-BTaggingReader::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+BTaggingReaderMiniAOD::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -328,4 +327,4 @@ BTaggingReader::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(BTaggingReader);
+DEFINE_FWK_MODULE(BTaggingReaderMiniAOD);
