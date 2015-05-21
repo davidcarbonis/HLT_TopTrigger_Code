@@ -50,7 +50,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxE
 ## Input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-	'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/MINIAODSIM/007B37D4-8B70-E411-BC2D-0025905A6066.root'
+#	'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/MINIAODSIM/007B37D4-8B70-E411-BC2D-0025905A6066.root',
+        'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/MINIAODSIM/4AA0FF9A-3870-E411-B0EF-0025905A6076.root',
     )
 )
 
@@ -77,7 +78,7 @@ process.bTaggingReaderMiniAOD = cms.EDAnalyzer('BTaggingReaderMiniAOD',
 )
 
 ## Output file
-process.TFileService = cms.Service("TFileService", fileName = cms.string('Output.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('Output_MiniAOD.root'))
 
 
 ## Let it run
