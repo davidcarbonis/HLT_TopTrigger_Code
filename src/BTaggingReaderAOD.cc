@@ -71,7 +71,7 @@ private:
   // ----------member data ---------------------------
 
   const edm::InputTag jets_;
-  const std::string bDiscriminators_;
+  //  const std::string bDiscriminators_;
   //
 
  bool triggerfired(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
@@ -126,8 +126,8 @@ private:
 //
 BTaggingReaderAOD::BTaggingReaderAOD(const edm::ParameterSet& iConfig) :
 
-  jets_(iConfig.getParameter<edm::InputTag>("jets")),
-  bDiscriminators_(iConfig.getParameter<std::string> ("combinedInclusiveSecondaryVertexV2BJetTags"))
+  jets_(iConfig.getParameter<edm::InputTag>("jets"))//,
+  //  bDiscriminators_(iConfig.getParameter<std::string> ("combinedSecondaryVertexMVABJetTags"))
 {
 
   triggerName_ = iConfig.getUntrackedParameter<std::string>("PathName","HLT_Dimuon0_Jpsi_v");
@@ -242,21 +242,25 @@ BTaggingReaderAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   //Get b tag information
   edm::Handle<reco::JetTagCollection> bTagHandle;
-  iEvent.getByLabel(bDiscriminators_, bTagHandle);
+  iEvent.getByLabel("combinedInclusiveSecondaryVertexV2BJetTags", bTagHandle); //trackCountingHighEffBJetTags, combinedInclusiveSecondaryVertexV2BJetTags, combinedMVABJetTags, combinedSecondaryVertexBJetTags
   const reco::JetTagCollection & bTags = *(bTagHandle.product());
 
   //Get flavour matching collection
   edm::Handle<reco::JetFlavourMatchingCollection> jetMC;
-  iEvent.getByLabel("AK5byValAlgo", jetMC);
+  iEvent.getByLabel("AK4byValAlgo", jetMC);
 
   FlavourMap flavours;
-  for (reco::JetFlavourMatchingCollection::const_iterator iter = jetMC->begin();
-       iter != jetMC->end(); iter++) {
+
+  for (reco::JetFlavourMatchingCollection::const_iterator iter = jetMC->begin(); iter != jetMC->end(); iter++) 
+  {
     unsigned int fl = std::abs(iter->second.getFlavour());
+    if (abs(fl) == 1 || abs(fl) == 2 || abs(fl) == 3 || abs(fl) == 4 || abs(fl) == 5 || abs(fl) == 6 ){ 
+    std::cout << "fl: " << fl << std::endl;
+    std::cout << "iter->first: " << iter->first << std::endl;}
     flavours.insert(FlavourMap::value_type(iter->first, fl));
   }
 
-
+    
 
   // Begin analysising the jets
   
@@ -266,21 +270,24 @@ BTaggingReaderAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     aJet = bTags[i].first; // fill it from the collection being probed.
 
      
-    if( bTags[i].first->pt()<30. || std::abs(bTags[i].first->eta())>3.0 ) 
+    if( aJet->pt()<30. || std::abs(aJet->eta())>3.0 ) 
     {
 	continue; // skip jets with low pT or outside the tracker acceptance
     }
 
-    pT =  bTags[i].first->pt();
-    eta =  bTags[i].first->eta();
+    pT =  aJet->pt();
+    eta =  aJet->eta(); 
+
+    std::cout << aJet->energy() << " " << pT << " " << eta << " " << " " << aJet->phi() << std::endl;
     if(flavours.find(aJet) == flavours.end())
     {
       std::cout << "Cannot access flavour for this jet - not in the Map" << std::endl;
-      flavour=0;
+      flavour=-99;
     }
     else
     {
       flavour = flavours[aJet];
+      std::cout << "Flavour: " << flavour << std::endl;
     }
 
     CSV = bTags[i].second;

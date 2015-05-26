@@ -32,6 +32,8 @@ process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load("PhysicsTools.JetMCAlgos.CaloJetsMCFlavour_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'PHYS14_25_V1')
@@ -66,15 +68,11 @@ process.bTaggingReaderAOD = cms.EDAnalyzer('BTaggingReaderAOD',
 #HLT_Mu17_Mu8_v, HLT_IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV_v1, HLT_Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1, HLT_Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV_v1;
 
     debug = cms.untracked.bool(False),
-    bDiscriminators = cms.vstring(     
-        'combinedInclusiveSecondaryVertexV2BJetTags',
-        #'trackCountingHighEffBJetTags',
-    )
 )
 
 ## Output file
-process.TFileService = cms.Service("TFileService", fileName = cms.string('Output_MiniAOD.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('Output_AOD.root'))
 
 
 ## Let it run
-process.p = cms.Path(process.myPartons*process.AK5Flavour*process.bTaggingReaderAOD)
+process.p = cms.Path(process.myPartons*process.AK4Flavour*process.bTaggingReaderAOD)

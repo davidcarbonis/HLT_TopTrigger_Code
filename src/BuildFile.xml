@@ -3,11 +3,13 @@
 <use name="FWCore/ParameterSet"/>
 <use name="FWCore/ServiceRegistry"/>
 
+<use name="DataFormats/BTauReco"/> 
+<use name="DataFormats/JetReco"/>
 <use name="DataFormats/Candidate"/>
 <use name="DataFormats/TrackReco"/>
 <use name="PhysicsTools/UtilAlgos"/>
 
-<use name="DataFormats/BTauReco"/> 
+<use name="SimDataFormats/JetMatching"/>
 
 <use name="TrackingTools/TransientTrack"/>
 <use name="TrackingTools/Records"/>
