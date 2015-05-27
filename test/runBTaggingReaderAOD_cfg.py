@@ -31,7 +31,8 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load("PhysicsTools.JetMCAlgos.CaloJetsMCFlavour_cfi")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
 

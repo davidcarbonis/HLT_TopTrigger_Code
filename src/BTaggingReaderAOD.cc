@@ -74,7 +74,7 @@ private:
   //  const std::string bDiscriminators_;
   //
 
- bool triggerfired(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
+  bool triggerfired(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
   bool triggerfound(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
   unsigned int triggerIndex(const edm::Event& ev, edm::Handle<edm::TriggerResults> triggerResultsHandle_, TString trigname);
   
@@ -216,7 +216,8 @@ BTaggingReaderAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   bool triggerFound = triggerfound(iEvent,HLTR,triggerName_);
   //if (triggerFound) countInAccepted++;
-  
+  bool triggerFired = triggerfired(iEvent,HLTR,triggerName_);
+ 
   const unsigned int numberOfHltPaths = HLTR->size();
   //const unsigned int numberOfHltFilters = triggerEventHandle_->sizeFilters();
   
@@ -242,7 +243,7 @@ BTaggingReaderAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   //Get b tag information
   edm::Handle<reco::JetTagCollection> bTagHandle;
-  iEvent.getByLabel("combinedInclusiveSecondaryVertexV2BJetTags", bTagHandle); //trackCountingHighEffBJetTags, combinedInclusiveSecondaryVertexV2BJetTags, combinedMVABJetTags, combinedSecondaryVertexBJetTags
+  iEvent.getByLabel("combinedInclusiveSecondaryVertexV2BJetTags", bTagHandle);
   const reco::JetTagCollection & bTags = *(bTagHandle.product());
 
   //Get flavour matching collection
@@ -294,16 +295,16 @@ BTaggingReaderAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   
     
-    /*
+    
     // Fill trigger fired Flag
     if (triggerFired)  
-    {*/
-      triggerFlag = 1;	/*
+    {
+      triggerFlag = 1;	
     }
     else
     {
       triggerFlag = 0;
-      }*/
+      }
 
     mytree_->Fill();
 
