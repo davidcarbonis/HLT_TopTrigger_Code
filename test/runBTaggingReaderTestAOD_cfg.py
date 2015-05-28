@@ -1,30 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-from FWCore.ParameterSet.VarParsing import VarParsing
-
-###############################
-####### Parameters ############
-###############################
-
-options = VarParsing ('python')
-
-options.register('reportEvery', 100,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.int,
-    "Report every N events (default is N=10)"
-)
-
-options.register('wantSummary', False,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    "Print out trigger and timing summary"
-)
-
-## 'maxEvents' is already registered by the Framework, changing default value
-options.setDefault('maxEvents', -1)
-
-options.parseArguments()
-
 process = cms.Process("USER")
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -39,10 +14,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
-
 ## Events to process
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ## Input files
 process.source = cms.Source("PoolSource",
@@ -50,12 +23,6 @@ process.source = cms.Source("PoolSource",
 #	'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/MINIAODSIM/007B37D4-8B70-E411-BC2D-0025905A6066.root',
         'file:/nfs/data/eepgadm/ROOTfiles/SingleTop/Phys14DR/TT_Tune4C_13TeV-pythia8-tauola/AODSIM/08860A39-3770-E411-A0AE-0026189438AD.root',
     )
-)
-
-## Options and Output Report
-process.options   = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(options.wantSummary),
-    allowUnscheduled = cms.untracked.bool(True)
 )
 
 ## Output file
@@ -74,12 +41,6 @@ process.load('Configuration.StandardSequences.PATMC_cff')
 
 # Automatic addition of the customisation function from PhysicsTools.PatAlgos.slimming.miniAOD_tools
 from PhysicsTools.PatAlgos.slimming.miniAOD_tools import miniAOD_customizeAllMC 
-
-
-process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True)
-)
-
 
 # Output definition
 ## Initialize analyzer
