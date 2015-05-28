@@ -11,12 +11,8 @@ config.General.transferLogs = False
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'runBTaggingReaderTestAOD_cfg.py'
 
-#config.Data.inputDataset = '/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM'
 config.Data.inputDataset = '/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/AODSIM'
-
 config.Data.inputDBS = 'global' #Variable to be used when analysing data
-config.Data.useParent = True           # Important!
-
 config.Data.splitting = 'FileBased' #EventBased for generation, FileBased for analysing data 
 config.Data.unitsPerJob = 100
 #config.Data.totalUnits = 100
