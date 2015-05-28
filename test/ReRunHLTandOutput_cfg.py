@@ -6,7 +6,6 @@ process = cms.Process( "TEST" )
 process.load("Demo.DemoAnalyser.setup_cff")
 
 # General config options
-import FWCore.ParameterSet.VarParsing as VarParsing
 import sys
 
 process.HLTConfigVersion = cms.PSet(
@@ -9169,9 +9168,9 @@ if 'hltDQML1SeedLogicScalers' in process.__dict__:
 
 
 # enable the TrigReport and TimeReport
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool( True )
-)
+#process.options = cms.untracked.PSet(
+#    wantSummary = cms.untracked.bool( True )
+#)
 
 # override the GlobalTag, connection string and pfnPrefix
 if 'GlobalTag' in process.__dict__:
@@ -9222,14 +9221,13 @@ if 'MessageLogger' in process.__dict__:
     process.MessageLogger.categories.append('FastReport')
 
 # load the DQMStore and DQMRootOutputModule
-process.load( "DQMServices.Core.DQMStore_cfi" )
-process.DQMStore.enableMultiThread = True
+#process.load( "DQMServices.Core.DQMStore_cfi" )
+#process.DQMStore.enableMultiThread = True
+#
+#process.dqmOutput = cms.OutputModule("DQMRootOutputModule",
+#    fileName = cms.untracked.string("DQMIO.root")
+#)
 
-process.dqmOutput = cms.OutputModule("DQMRootOutputModule",
-    fileName = cms.untracked.string("DQMIO.root")
-)
-
-#process.DQMOutput = cms.EndPath( process.dqmOutput )
 
 # for HLT
 if hasattr(process, 'hltCsc2DRecHits'):
@@ -9254,10 +9252,6 @@ process.hltOutput = cms.OutputModule( "PoolOutputModule",
         'keep *'
     )
 )
-
-#Load analysis module and execute it
-#process.load("Demo.DemoAnalyser.runBTaggingEfficiency_cfi")
-#process.out = cms.EndPath( process.bTaggingEfficiency )
 
 process.out = cms.EndPath( process.hltOutput )
 
