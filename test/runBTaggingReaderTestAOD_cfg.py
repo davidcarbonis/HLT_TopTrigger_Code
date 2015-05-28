@@ -14,8 +14,6 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
-
 ## Events to process
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
