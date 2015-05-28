@@ -19,7 +19,7 @@ config.Data.useParent = True           # Important!
 
 config.Data.splitting = 'FileBased' #EventBased for generation, FileBased for analysing data 
 config.Data.unitsPerJob = 100
-config.Data.totalUnits = 100
+#config.Data.totalUnits = 100
 
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 
