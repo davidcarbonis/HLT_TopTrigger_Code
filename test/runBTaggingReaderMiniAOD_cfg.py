@@ -1,9 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-###############################
-####### Parameters ############
-###############################
-
 process = cms.Process("USER")
 
 #process.load("TrackingTools.PatternTools.TSCBLBuilderNoMaterial_cfi")
